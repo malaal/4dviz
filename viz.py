@@ -7,20 +7,22 @@ from stl import mesh
 from scipy.spatial.transform import Rotation
 import numpy as np
 
+FONT = 'c:\\windows\\fonts\\Arial.ttf'
 def status(screen, msg="", height=16):
-    font_obj=pygame.font.Font('c:\\windows\\fonts\\Arial.ttf',height-2)
+    font_obj=pygame.font.Font(FONT,height-2)
     text_obj=font_obj.render(msg,True,"white")
     textsz = text_obj.get_rect()
     screen.blit(text_obj, (1, screen.get_height()-height+1))
 
 # Helper class for a sub-screen that encapsulates drawing the surface and the border around it
 class Viewport:
-    def __init__(self, w, h, x, y, border=1):
+    def __init__(self, w, h, x, y, border=1, label=""):
         self.w = w-(border*2)
         self.h = h-(border*2)
         self.x = x
         self.y = y
         self.border = border
+        self.label = label
 
         self.surface = pygame.Surface((w,h))
 
@@ -35,6 +37,13 @@ class Viewport:
 
     def blit(self, surf):
         surf.blit(self.surface, (self.x+self.border,self.y+self.border))
+
+        if self.label:
+            font_obj=pygame.font.Font(FONT,15)
+            text_obj=font_obj.render(self.label,True,"white")
+            textsz = text_obj.get_rect()
+            surf.blit(text_obj, (self.x + (self.w - textsz[2])/2, self.y + 5))
+
         pygame.draw.rect(surf, "white", (self.x,self.y,self.w,self.h), self.border)
 
 class obj4:
@@ -386,8 +395,8 @@ def main(args):
         screen.fill("black")
 
         # Set up a window for drawing
-        W = Viewport((width-45)/2, height-30, 15, 15)
-        X = Viewport((width-45)/2, height-30, 30+((width-45)/2), 15)
+        W = Viewport((width-45)/2, height-30, 15, 15, label="XY")
+        X = Viewport((width-45)/2, height-30, 30+((width-45)/2), 15, label="XZ")
 
         cube.reset()
         cube.rotate(*rot)

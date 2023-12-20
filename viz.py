@@ -3,8 +3,6 @@ import pygame
 import sys
 import math
 from stl import mesh
-
-from scipy.spatial.transform import Rotation
 import numpy as np
 
 FONT = 'c:\\windows\\fonts\\Arial.ttf'
@@ -106,7 +104,6 @@ class obj4:
             [0, 0, math.cos(zw), -math.sin(zw)],
             [0, 0, math.sin(zw), math.cos(zw)]]
 
-        #self.points = (self.points * (np.matrix(rotation_x) * np.matrix(rotation_y) * np.matrix(rotation_z))).tolist()
         self.points = (self.points *
             np.matrix(rotation4d_xy) * np.matrix(rotation4d_xz) * np.matrix(rotation4d_xw) *
             np.matrix(rotation4d_yz) * np.matrix(rotation4d_yw) * np.matrix(rotation4d_zw)).tolist()
@@ -128,10 +125,6 @@ class obj4:
                 B = self.points[edge[2]]
                 dA = dist/(dist+A[dimz])
                 dB = dist/(dist+B[dimz])
-                # pygame.draw.line(surface, edge[0],
-                #     (x + (A[dimx] * ((dist+A[dimz])/A[dimz])), y + (A[dimy] * ((dist+A[dimz])/A[dimz]))),
-                #     (x + (B[dimx] * ((dist+B[dimz])/B[dimz])), y + (B[dimy] * ((dist+B[dimz])/B[dimz])))
-                #     )
                 pygame.draw.line(surface, edge[0],
                     (x + (A[dimx] * dA), y + (A[dimy] * dA)),
                     (x + (B[dimx] * dB), y + (B[dimy] * dB))
@@ -185,10 +178,6 @@ class obj3:
                 B = self.points[edge[2]]
                 dA = dist/(dist+A[dimz])
                 dB = dist/(dist+B[dimz])
-                # pygame.draw.line(surface, edge[0],
-                #     (x + (A[dimx] * ((dist+A[dimz])/A[dimz])), y + (A[dimy] * ((dist+A[dimz])/A[dimz]))),
-                #     (x + (B[dimx] * ((dist+B[dimz])/B[dimz])), y + (B[dimy] * ((dist+B[dimz])/B[dimz])))
-                #     )
                 pygame.draw.line(surface, edge[0],
                     (x + (A[dimx] * dA), y + (A[dimy] * dA)),
                     (x + (B[dimx] * dB), y + (B[dimy] * dB))

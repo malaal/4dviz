@@ -1,6 +1,7 @@
 import argparse
 import pygame
 import sys
+import math
 
 from scipy.spatial.transform import Rotation
 import numpy as np
@@ -36,39 +37,36 @@ class Viewport:
         surf.blit(self.surface, (self.x+self.border,self.y+self.border))
         pygame.draw.rect(surf, "white", (self.x,self.y,self.w,self.h), self.border)
 
-class Cube:
-    def __init__(self, d=1):
-        self.dim = 3 #3d shape
+class obj3:
+    def __init__(self, points=[], edges=[]):
+        self.dim = 3
+        self.reset_points = points
+        self.reset_edges = edges
+        self.reset()
 
-        self.d = d
-        self.points = [
-            [ d,  d, -d],
-            [-d,  d, -d],
-            [-d, -d, -d],
-            [ d, -d, -d],
-            [ d,  d,  d],
-            [-d,  d,  d],
-            [-d, -d,  d],
-            [ d, -d,  d],
-            ]
-        self.edges = [
-            ["red",   0, 1],
-            ["white", 1, 2],
-            ["white", 2, 3],
-            ["white", 3, 0],
-            ["white", 4, 5],
-            ["white", 5, 6],
-            ["white", 6, 7],
-            ["white", 7, 4],
-            ["white", 0, 4],
-            ["white", 1, 5],
-            ["white", 2, 6],
-            ["white", 3, 7],
-        ]
+    def reset(self):
+        self.points = self.reset_points
+        self.edges = self.reset_edges
 
-    def rotate(self, a=0, b=0, c=0):
-        R = Rotation.from_euler('xyz', [a,b,c], degrees=True)
-        self.points=R.apply(self.points)
+    def rotate(self, a=0, b=0, c=0, degrees=True):
+        if degrees:
+            a = a*(math.pi/180)
+            b = b*(math.pi/180)
+            c = c*(math.pi/180)
+
+        rotation_x = [[1, 0, 0],
+                      [0, math.cos(a), -math.sin(a)],
+                      [0, math.sin(a), math.cos(a)]]
+
+        rotation_y = [[math.cos(b), 0, -math.sin(b)],
+                      [0, 1, 0],
+                      [math.sin(b), 0, math.cos(b)]]
+
+        rotation_z = [[math.cos(c), -math.sin(c), 0],
+                      [math.sin(c), math.cos(c), 0],
+                      [0, 0 ,1]]
+
+        self.points = (self.points * (np.matrix(rotation_x) * np.matrix(rotation_y) * np.matrix(rotation_z))).tolist()
 
     def translate(self, x=0, y=0, z=0):
         self.points = [[point[0]+x, point[1]+y, point[2]+z] for point in self.points]
@@ -95,6 +93,38 @@ class Cube:
                     (x + (A[dimx] * dA), y + (A[dimy] * dA)),
                     (x + (B[dimx] * dB), y + (B[dimy] * dB))
                     )
+
+class Cube(obj3):
+    def __init__(self, d=1):
+        self.dim = 3 #3d shape
+
+        self.d = d
+        points = [
+            [ d,  d, -d],
+            [-d,  d, -d],
+            [-d, -d, -d],
+            [ d, -d, -d],
+            [ d,  d,  d],
+            [-d,  d,  d],
+            [-d, -d,  d],
+            [ d, -d,  d],
+            ]
+        edges = [
+            ["red",   0, 1],
+            ["white", 1, 2],
+            ["white", 2, 3],
+            ["white", 3, 0],
+            ["white", 4, 5],
+            ["white", 5, 6],
+            ["white", 6, 7],
+            ["white", 7, 4],
+            ["white", 0, 4],
+            ["white", 1, 5],
+            ["white", 2, 6],
+            ["white", 3, 7],
+        ]
+
+        super().__init__(points, edges)
 '''
 class Obj4D:
     def __init__(self, d=1):
@@ -135,6 +165,8 @@ def main(args):
     # Initialize various engines
     clock = pygame.time.Clock()
     pygame.font.init()
+
+    cube = Cube(100)
 
     rot = [0,0,0]
     trans = [0,0,0]
@@ -179,7 +211,7 @@ def main(args):
         # Set up a window for drawing
         W = Viewport(width-30, height-30, 15, 15)
 
-        cube = Cube(100)
+        cube.reset()
         cube.rotate(*rot)
         cube.translate(*trans)
         if ortho:
